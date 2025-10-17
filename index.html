@@ -1,194 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegraph Viewer - Dec to Jan</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f6fa;
-            margin: 0;
-        }
-
-        header {
-            text-align: center;
-            background: #333;
-            color: white;
-            padding: 15px;
-            font-size: 1.5em;
-        }
-
-        #gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-            padding: 20px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .card:hover {
-            transform: scale(1.04);
-        }
-
-        .card img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-        }
-
-        .card p {
-            text-align: center;
-            font-weight: 600;
-            padding: 10px;
-        }
-
-        #viewer {
-            display: none;
-            padding: 20px;
-        }
-
-        #controls {
-            display: flex;
-            justify-content: space-between;
-            margin: 15px 0;
-        }
-
-        button {
-            background: #333;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #555;
-        }
-
-        iframe {
-            width: 100%;
-            height: 75vh;
-            border: none;
-            border-radius: 12px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telegraph Viewer - Embedded Browser</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f5f6fa; margin:0; }
+header { text-align:center; background:#333; color:white; padding:15px; font-size:1.5em; }
+#loadingBarContainer { width: 100%; background: #ddd; height: 8px; }
+#loadingBar { width: 0%; height: 8px; background: #28a745; transition: width 0.2s; }
+#gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; padding:20px; }
+.card { background:white; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.15); cursor:pointer; transition: transform 0.2s; }
+.card:hover { transform:scale(1.04); }
+.card img { width:100%; height:150px; object-fit:cover; border-top-left-radius:12px; border-top-right-radius:12px; }
+.card p { text-align:center; font-weight:600; padding:10px; }
+#viewer { display:none; padding:0 20px 20px 20px; }
+#browserHeader { display:flex; justify-content:space-between; align-items:center; background:#444; color:white; padding:8px 12px; border-radius:8px 8px 0 0; }
+#browserHeader button { margin-left:5px; background:#666; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; }
+#browserHeader button:hover { background:#888; }
+#browserContent { height:75vh; overflow:auto; border:1px solid #ccc; border-radius:0 0 8px 8px; background:white; padding:10px; }
+</style>
 </head>
-
 <body>
 
-    <header>📅 Telegraph Viewer – Dec to Jan</header>
+<header>📅 Telegraph Viewer – Dec to Jan (Mini Browser)</header>
+<div id="loadingBarContainer"><div id="loadingBar"></div></div>
 
-    <div id="gallery"></div>
+<div id="gallery"></div>
 
-    <div id="viewer">
-        <div id="controls">
-            <button id="back">⬅️ Back</button>
-            <div>
-                <button id="prev">⬅️ Prev</button>
-                <button id="next">Next ➡️</button>
-            </div>
-        </div>
-        <iframe id="postFrame"></iframe>
+<div id="viewer">
+  <div id="browserHeader">
+    <div id="browserTitle">Post</div>
+    <div>
+      <button id="back">🏠 Home</button>
+      <button id="prev">⬅️ Prev</button>
+      <button id="next">Next ➡️</button>
     </div>
+  </div>
+  <div id="browserContent">Loading...</div>
+</div>
 
-    <script>
-        const base = "https://telegra.ph/Check-her--Private--Photos-";
+<script>
+const base = "https://telegra.ph/Check-her--Private--Photos-";
+function generateLinks(month, days, monthName){
+  const arr = [];
+  for(let i=1;i<=days;i++){
+    const day = String(i).padStart(2,'0');
+    arr.push({ id: `${month}-${day}`, title: `${monthName} ${day}`, content: null });
+  }
+  return arr;
+}
 
-        // Generate Dec + Jan links
-        function generateLinks(month, days, monthName) {
-            const arr = [];
-            for (let i = 1; i <= days; i++) {
-                const day = String(i).padStart(2, '0');
-                arr.push({
-                    url: `${base}${month}-${day}`,
-                    title: `${monthName} ${day}`
-                });
-            }
-            return arr;
-        }
+const posts = [...generateLinks("12",31,"Dec"), ...generateLinks("01",31,"Jan")];
 
-        const posts = [...generateLinks("12", 31, "Dec"), ...generateLinks("01", 31, "Jan")];
+const gallery = document.getElementById("gallery");
+const viewer = document.getElementById("viewer");
+const browserTitle = document.getElementById("browserTitle");
+const browserContent = document.getElementById("browserContent");
+const back = document.getElementById("back");
+const prev = document.getElementById("prev");
+const next = document.getElementById("next");
+const loadingBar = document.getElementById("loadingBar");
 
-        const gallery = document.getElementById("gallery");
-        const viewer = document.getElementById("viewer");
-        const frame = document.getElementById("postFrame");
-        const back = document.getElementById("back");
-        const prev = document.getElementById("prev");
-        const next = document.getElementById("next");
+let currentIndex = 0;
 
-        let currentIndex = 0;
+// Gallery
+posts.forEach((post,index)=>{
+  const card = document.createElement("div");
+  card.className="card";
 
-        // Show thumbnails
-        posts.forEach((post, index) => {
-            const card = document.createElement("div");
-            card.className = "card";
+  const img = document.createElement("img");
+  img.src = `https://image.thum.io/get/${base}${post.id}`;
+  img.alt = post.title;
 
-            const img = document.createElement("img");
-            img.src = `https://image.thum.io/get/${post.url}`;
-            img.alt = post.title;
+  const title = document.createElement("p");
+  title.textContent = post.title;
 
-            const title = document.createElement("p");
-            title.textContent = post.title;
+  card.appendChild(img);
+  card.appendChild(title);
+  card.onclick = ()=>openPost(index);
+  gallery.appendChild(card);
+});
 
-            card.appendChild(img);
-            card.appendChild(title);
+// Prefetch
+let fetchedCount = 0;
+posts.forEach(post=>{
+  const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(base + post.id)}`;
+  fetch(proxy)
+    .then(res=>res.text())
+    .then(html=>post.content = html)
+    .catch(()=>post.content = "<p style='color:red;'>Failed to load content</p>")
+    .finally(()=>{
+      fetchedCount++;
+      loadingBar.style.width = `${Math.round(fetchedCount/posts.length*100)}%`;
+      if(fetchedCount===posts.length){
+        setTimeout(()=>loadingBar.parentElement.style.display="none",300);
+      }
+    });
+});
 
-            card.onclick = () => openPost(index);
+// Viewer
+function openPost(index){
+  currentIndex = index;
+  gallery.style.display="none";
+  viewer.style.display="block";
+  loadPost(posts[currentIndex]);
+}
+function loadPost(post){
+  browserTitle.textContent = post.title;
+  browserContent.innerHTML = post.content || "<p>Loading...</p>";
+}
 
-            gallery.appendChild(card);
-        });
-
-        // Open post in viewer
-        function openPost(index) {
-            currentIndex = index;
-            gallery.style.display = "none";
-            viewer.style.display = "block";
-            loadPost(posts[currentIndex].url);
-        }
-
-        // Load post using proxy API
-        function loadPost(url) {
-            frame.srcdoc = `<p style='text-align:center;'>Loading...</p>`;
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-            fetch(proxyUrl)
-                .then(res => res.text())
-                .then(html => frame.srcdoc = html)
-                .catch(() => frame.srcdoc = `<p style='color:red;text-align:center;'>Failed to load content.</p>`);
-        }
-
-        // Controls
-        back.onclick = () => {
-            viewer.style.display = "none";
-            gallery.style.display = "grid";
-        };
-
-        prev.onclick = () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                loadPost(posts[currentIndex].url);
-            }
-        };
-
-        next.onclick = () => {
-            if (currentIndex < posts.length - 1) {
-                currentIndex++;
-                loadPost(posts[currentIndex].url);
-            }
-        };
-    </script>
+// Controls
+back.onclick = ()=>{
+  viewer.style.display="none";
+  gallery.style.display="grid";
+};
+prev.onclick = ()=>{
+  if(currentIndex>0){ currentIndex--; loadPost(posts[currentIndex]); }
+};
+next.onclick = ()=>{
+  if(currentIndex<posts.length-1){ currentIndex++; loadPost(posts[currentIndex]); }
+};
+</script>
 
 </body>
-
 </html>
