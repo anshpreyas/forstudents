@@ -1,252 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course PDFs Player</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: "Segoe UI", sans-serif;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin-top: 40px;
-        }
-
-        .pdf-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: 0.3s;
-            text-align: center;
-            padding: 20px;
-            background-color: #fff;
-            cursor: pointer;
-        }
-
-        .card:hover {
-            transform: scale(1.05);
-        }
-
-        .pdf-title {
-            font-weight: 500;
-            color: #198754;
-            text-decoration: none;
-            display: block;
-            margin-top: 10px;
-        }
-
-        .pdf-title:hover {
-            text-decoration: underline;
-            color: #146c43;
-        }
-
-        iframe {
-            width: 100%;
-            height: 600px;
-            border: none;
-            margin-bottom: 20px;
-        }
-
-        canvas {
-            max-width: 100%;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 12px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Links Platform</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body { font-family: "Segoe UI", sans-serif; background:#f8f9fa; }
+.container { max-width:1200px; margin-top:40px; }
+.card { border:none; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:20px; cursor:pointer; background:#fff; text-align:center; transition:.3s; }
+.card:hover { transform:scale(1.05); }
+.pdf-title { margin-top:10px; font-weight:500; color:#198754; display:block; text-decoration:none; }
+.pdf-title:hover { text-decoration:underline; color:#146c43; }
+.modal-body a { font-size:1.2rem; color:#0d6efd; text-decoration:none; }
+.modal-body a:hover { text-decoration:underline; }
+.pdf-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; }
+</style>
 </head>
-
 <body>
 
-    <div class="container">
-        <h2 class="text-center mb-4">📄 Course PDFs Player</h2>
+<div class="container">
+  <h2 class="text-center mb-4">📄 Course Links Platform</h2>
+  <div id="pdfGrid" class="pdf-grid"></div>
 
-        <div id="pdfGrid" class="pdf-grid"></div>
+  <button id="prevBtn" class="btn btn-primary mt-4">Previous</button>
+  <button id="nextBtn" class="btn btn-success mt-4">Next</button>
+</div>
 
-        <button id="combinedBtn" class="btn btn-danger btn-lg mt-4 w-100">📚 Open All PDFs Dec → Jan</button>
-        <button id="imagesBtn" class="btn btn-info btn-lg mt-3 w-100">🖼️ View All PDF Pages as Images</button>
+<!-- Modal -->
+<div class="modal fade" id="linkModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Lecture</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <a id="modalLink" href="#" target="_blank">Open Lecture Link</a>
+      </div>
+      <div class="modal-footer">
+        <button id="prevModalBtn" class="btn btn-primary">Previous</button>
+        <button id="nextModalBtn" class="btn btn-success">Next</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+      </div>
     </div>
+  </div>
+</div>
 
-    <!-- PDF Modal -->
-    <div class="modal fade" id="pdfModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="pdfTitle">PDF Title</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <iframe id="pdfViewer" src=""></iframe>
-                </div>
-                <div class="modal-footer">
-                    <button id="prevBtn" class="btn btn-primary">Previous</button>
-                    <button id="nextBtn" class="btn btn-success">Next</button>
-                    <button id="fullscreenBtn" class="btn btn-warning">Full Screen</button>
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const base = "https://telegra.ph/Check-her--Private--Photos-"; // Change to your Telegraph base
+function generateLinks(month, days, monthName){
+  const arr = [];
+  for(let i=1;i<=days;i++){
+    const dayStr = String(i).padStart(2,'0');
+    arr.push({title:`Lecture – ${dayStr} ${monthName}`, link:`${base}${month}-${dayStr}`});
+  }
+  return arr;
+}
+const links = [...generateLinks("12",31,"Dec"), ...generateLinks("01",31,"Jan")];
 
-    <!-- Combined PDFs Modal -->
-    <div class="modal fade" id="combinedModal" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">All PDFs Dec → Jan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="combinedContainer"></div>
-            </div>
-        </div>
-    </div>
+// Generate grid cards
+const container = document.getElementById("pdfGrid");
+links.forEach((item,index)=>{
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <span class="pdf-title">${item.title}</span>
+  `;
+  card.onclick = ()=>openModal(index);
+  container.appendChild(card);
+});
 
-    <!-- Images Modal -->
-    <div class="modal fade" id="imagesModal" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">All PDF Pages as Images</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <img id="viewerImage" src="" style="max-width:100%; max-height:80vh; border-radius:12px;">
-                </div>
-                <div class="modal-footer">
-                    <button id="prevImageBtn" class="btn btn-primary">Previous</button>
-                    <button id="nextImageBtn" class="btn btn-success">Next</button>
-                    <button id="fullscreenImageBtn" class="btn btn-warning">Full Screen</button>
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+// Modal navigation
+let currentIndex = 0;
+const modal = new bootstrap.Modal(document.getElementById('linkModal'));
+const modalTitle = document.getElementById("modalTitle");
+const modalLink = document.getElementById("modalLink");
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+function openModal(index){
+  currentIndex = index;
+  modalTitle.innerText = links[index].title;
+  modalLink.href = links[index].link;
+  modal.show();
+}
 
-    <script>
-        const base = "https://telegra.ph/Check-her--Private--Photos-";
+document.getElementById("prevModalBtn").onclick = ()=>{
+  if(currentIndex>0) openModal(currentIndex-1);
+}
+document.getElementById("nextModalBtn").onclick = ()=>{
+  if(currentIndex<links.length-1) openModal(currentIndex+1);
+}
 
-        function generateMonthLinks(month, days, monthName) {
-            const arr = [];
-            for (let day = 1; day <= days; day++) {
-                const dayStr = String(day).padStart(2, '0');
-                arr.push({ title: `Lecture – ${dayStr} ${monthName}`, link: `${base}${month}-${dayStr}.pdf` });
-            }
-            return arr;
-        }
-
-        const pdfLinks = [...generateMonthLinks("12", 31, "Dec"), ...generateMonthLinks("01", 31, "Jan")];
-
-        // PDF Grid
-        const container = document.getElementById("pdfGrid");
-        pdfLinks.forEach((pdf, index) => {
-            const card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg" alt="PDF" width="80">
-        <span class="pdf-title">${pdf.title}</span>
-      `;
-            card.onclick = () => openViewer(index);
-            container.appendChild(card);
-        });
-
-        // PDF Viewer Modal
-        let currentIndex = 0;
-        const viewer = document.getElementById("pdfViewer");
-        const title = document.getElementById("pdfTitle");
-        const pdfModal = new bootstrap.Modal(document.getElementById('pdfModal'));
-
-        function openViewer(index) {
-            currentIndex = index;
-            loadPDF(currentIndex);
-            pdfModal.show();
-        }
-
-        function loadPDF(index) {
-            viewer.src = pdfLinks[index].link;
-            title.innerText = pdfLinks[index].title;
-        }
-
-        document.getElementById("prevBtn").onclick = () => {
-            if (currentIndex > 0) { currentIndex--; loadPDF(currentIndex); }
-        };
-        document.getElementById("nextBtn").onclick = () => {
-            if (currentIndex < pdfLinks.length - 1) { currentIndex++; loadPDF(currentIndex); }
-        };
-        document.getElementById("fullscreenBtn").onclick = () => {
-            const modalContent = document.querySelector('#pdfModal .modal-content');
-            modalContent.requestFullscreen?.();
-        };
-
-        // Combined PDFs Modal
-        const combinedModal = new bootstrap.Modal(document.getElementById('combinedModal'));
-        const combinedContainer = document.getElementById('combinedContainer');
-
-        document.getElementById("combinedBtn").onclick = () => {
-            combinedContainer.innerHTML = '';
-            pdfLinks.forEach(pdf => {
-                const iframe = document.createElement("iframe");
-                iframe.src = pdf.link;
-                combinedContainer.appendChild(iframe);
-            });
-            combinedModal.show();
-        };
-
-        // === IMAGE VIEWER FOR LAST BUTTON ONLY ===
-        const imagesModal = new bootstrap.Modal(document.getElementById('imagesModal'));
-        const viewerImage = document.getElementById("viewerImage");
-        let allImages = [];
-        let imgIndex = 0;
-
-        // Replace this with actual exported images of PDF pages
-        const months = ['dec', 'jan'];
-        months.forEach(month => {
-            const days = month === 'dec' ? 31 : 31;
-            for (let i = 1; i <= days; i++) {
-                const dayStr = String(i).padStart(2, '0');
-                allImages.push({ title: `Page ${dayStr} ${month.toUpperCase()}`, src: `images/${month}-${dayStr}.png` });
-            }
-        });
-
-        function showImage(index) {
-            viewerImage.src = allImages[index].src;
-            document.querySelector('#imagesModal .modal-title').innerText = allImages[index].title;
-        }
-
-        document.getElementById("imagesBtn").onclick = () => {
-            imgIndex = 0;
-            showImage(imgIndex);
-            imagesModal.show();
-        }
-
-        document.getElementById("prevImageBtn").onclick = () => {
-            if (imgIndex > 0) { imgIndex--; showImage(imgIndex); }
-        }
-
-        document.getElementById("nextImageBtn").onclick = () => {
-            if (imgIndex < allImages.length - 1) { imgIndex++; showImage(imgIndex); }
-        }
-
-        document.getElementById("fullscreenImageBtn").onclick = () => {
-            viewerImage.requestFullscreen?.();
-        }
-    </script>
+// Optional: grid-level next/prev (scroll through cards)
+document.getElementById("prevBtn").onclick = ()=>{
+  if(currentIndex>0) openModal(currentIndex-1);
+}
+document.getElementById("nextBtn").onclick = ()=>{
+  if(currentIndex<links.length-1) openModal(currentIndex+1);
+}
+</script>
 
 </body>
-
 </html>
-
