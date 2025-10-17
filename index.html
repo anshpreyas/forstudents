@@ -3,59 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Course Links Platform</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>Telegraph Viewer - Dec to Jan</title>
 <style>
-body { font-family: "Segoe UI", sans-serif; background:#f8f9fa; }
-.container { max-width:1200px; margin-top:40px; }
-.pdf-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; }
-.card { border:none; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:10px; cursor:pointer; background:#fff; text-align:center; transition:.3s; }
-.card:hover { transform:scale(1.05); }
-.card img { width:100%; height:150px; object-fit:cover; border-radius:8px; }
-.pdf-title { margin-top:10px; font-weight:500; color:#198754; display:block; text-decoration:none; }
-.pdf-title:hover { text-decoration:underline; color:#146c43; }
-.btn-group { margin-top:20px; text-align:center; }
+  body { font-family: Arial, sans-serif; background: #f5f6fa; margin: 0; }
+  header { text-align: center; background: #333; color: white; padding: 15px; font-size: 1.5em; }
+  #gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; padding: 20px; }
+  .card { background: white; border-radius: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.2s; }
+  .card:hover { transform: scale(1.04); }
+  .card img { width: 100%; height: 150px; object-fit: cover; border-top-left-radius: 12px; border-top-right-radius: 12px; }
+  .card p { text-align: center; font-weight: 600; padding: 10px; }
+  #viewer { display: none; padding: 20px; }
+  #controls { display: flex; justify-content: space-between; margin: 15px 0; }
+  button { background: #333; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
+  button:hover { background: #555; }
+  iframe { width: 100%; height: 75vh; border: none; border-radius: 12px; }
 </style>
 </head>
 <body>
+<header>📅 Telegraph Viewer – Dec to Jan</header>
 
-<div class="container">
-  <h2 class="text-center mb-4">📄 Course Links Platform</h2>
-  <div id="pdfGrid" class="pdf-grid"></div>
+<div id="gallery"></div>
+
+<div id="viewer">
+  <div id="controls">
+    <button id="back">⬅️ Back</button>
+    <div>
+      <button id="prev">⬅️ Prev</button>
+      <button id="next">Next ➡️</button>
+    </div>
+  </div>
+  <iframe id="postFrame"></iframe>
 </div>
 
 <script>
-const base = "https://telegra.ph/Check-her--Private--Photos-"; // Change to your Telegraph base
+const base = "https://telegra.ph/Check-her--Private--Photos-"; // 👉 change this only
 
-// Generate links dynamically
 function generateLinks(month, days, monthName){
   const arr = [];
   for(let i=1;i<=days;i++){
-    const dayStr = String(i).padStart(2,'0');
-    arr.push({title:`Lecture – ${dayStr} ${monthName}`, link:`${base}${month}-${dayStr}`});
+    const day = String(i).padStart(2,'0');
+    arr.push({
+      url: `${base}${month}-${day}`,
+      title: `${monthName} ${day}`
+    });
   }
   return arr;
 }
 
-const links = [...generateLinks("12",31,"Dec"), ...generateLinks("01",31,"Jan")];
-const container = document.getElementById("pdfGrid");
+// 🔗 All December + January links
+const posts = [
+  ...generateLinks("12",31,"Dec"),
+  ...generateLinks("01",31,"Jan")
+];
 
-// Dynamically create cards
-links.forEach((item)=>{
+const gallery = document.getElementById("gallery");
+const viewer = document.getElementById("viewer");
+const frame = document.getElementById("postFrame");
+const back = document.getElementById("back");
+const prev = document.getElementById("prev");
+const next = document.getElementById("next");
+
+let currentIndex = 0;
+
+// 🖼️ Display all posts dynamically
+posts.forEach((post, index) => {
   const card = document.createElement("div");
   card.className = "card";
-  const imgUrl = `https://telegra.ph/file/${item.link.split('/').pop()}.png`; // placeholder, actual image fetching may need server-side proxy if CORS blocked
-  card.innerHTML = `
-    <img src="${imgUrl}" alt="${item.title}" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg'">
-    <span class="pdf-title">${item.title}</span>
-  `;
-  card.onclick = ()=>{
-    window.location.href = item.link; // opens in same tab
-  };
-  container.appendChild(card);
+
+  const img = document.createElement("img");
+  img.src = `https://image.thum.io/get/${post.url}`;
+  img.alt = post.title;
+
+  const title = document.createElement("p");
+  title.textContent = post.title;
+
+  card.appendChild(img);
+  card.appendChild(title);
+  card.onclick = () => openPost(index);
+  gallery.appendChild(card);
 });
+
+function openPost(index) {
+  currentIndex = index;
+  gallery.style.display = "none";
+  viewer.style.display = "block";
+  loadPost(posts[index].url);
+}
+
+function loadPost(url) {
+  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+  frame.srcdoc = `<p style='text-align:center;'>Loading...</p>`;
+  fetch(proxyUrl)
+    .then(res => res.text())
+    .then(html => frame.srcdoc = html)
+    .catch(() => frame.srcdoc = `<p style='color:red;text-align:center;'>Failed to load.</p>`);
+}
+
+back.onclick = () => {
+  viewer.style.display = "none";
+  gallery.style.display = "grid";
+};
+
+prev.onclick = () => {
+  if (currentIndex > 0) {
+    currentIndex--;
+    loadPost(posts[currentIndex].url);
+  }
+};
+
+next.onclick = () => {
+  if (currentIndex < posts.length - 1) {
+    currentIndex++;
+    loadPost(posts[currentIndex].url);
+  }
+};
 </script>
 
 </body>
 </html>
-
