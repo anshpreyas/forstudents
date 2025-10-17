@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Course Videos</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin-top: 40px;
+        }
+
+        .video-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .video-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .video-thumb {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .video-title {
+            font-weight: 500;
+            color: #0d6efd;
+            text-decoration: none;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .video-title:hover {
+            text-decoration: underline;
+            color: #0a58ca;
+        }
+
+        .month-divider {
+            margin: 40px 0 20px;
+            font-weight: 600;
+            font-size: 1.4rem;
+            color: #333;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2 class="text-center mb-4">🎓 My Course Videos</h2>
+
+        <!-- December Section -->
+        <div class="month-divider">🎄 December Classes</div>
+        <div id="decemberVideos" class="row g-4"></div>
+
+        <!-- January Section -->
+        <div class="month-divider">❄️ January Classes</div>
+        <div id="januaryVideos" class="row g-4"></div>
+    </div>
+
+    <script>
+        // 🔹 Base YouTube pattern
+        const base = "https://www.youtube.com/dkjaslj-";
+
+        // 🔹 Function to generate links for a month
+        function generateMonthLinks(month, days, monthName) {
+            const arr = [];
+            for (let day = 1; day <= days; day++) {
+                const dayStr = String(day).padStart(2, "0");
+                const link = `${base}${month}-${dayStr}`;
+                const title = `Class – ${dayStr} ${monthName}`;
+                // Use YouTube thumbnail pattern (dummy image)
+                const thumbnail = `https://img.youtube.com/vi/dkjaslj-${month}-${dayStr}/hqdefault.jpg`;
+                arr.push({ title, link, thumbnail });
+            }
+            return arr;
+        }
+
+        // 🔹 Generate both months
+        const decemberVideos = generateMonthLinks("12", 31, "Dec");
+        const januaryVideos = generateMonthLinks("01", 31, "Jan");
+
+        // 🔹 Function to display video cards in grid
+        function displayVideos(videos, containerId) {
+            const container = document.getElementById(containerId);
+            videos.forEach(video => {
+                const col = document.createElement("div");
+                col.className = "col-md-4 col-sm-6 col-12";
+                col.innerHTML = `
+          <div class="video-card">
+            <a href="${video.link}" target="_blank">
+              <img src="${video.thumbnail}" alt="${video.title}" class="video-thumb">
+            </a>
+            <div class="p-3">
+              <a href="${video.link}" target="_blank" class="video-title">${video.title}</a>
+              <p class="text-muted small mb-0">Click to watch on YouTube</p>
+            </div>
+          </div>
+        `;
+                container.appendChild(col);
+            });
+        }
+
+        // 🔹 Display both months
+        displayVideos(decemberVideos, "decemberVideos");
+        displayVideos(januaryVideos, "januaryVideos");
+    </script>
+</body>
+
+</html>
