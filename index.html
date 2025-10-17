@@ -1,129 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Telegraph Viewer - Dec to Jan</title>
-<style>
-body { font-family: Arial, sans-serif; background: #f5f6fa; margin:0; }
-header { text-align:center; background:#333; color:white; padding:15px; font-size:1.5em; }
-#gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; padding:20px; }
-.card { background:white; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.15); cursor:pointer; transition: transform 0.2s; }
-.card:hover { transform:scale(1.04); }
-.card img { width:100%; height:150px; object-fit:cover; border-top-left-radius:12px; border-top-right-radius:12px; }
-.card p { text-align:center; font-weight:600; padding:10px; }
-#viewer { display:none; padding:20px; }
-#controls { display:flex; justify-content:space-between; margin:15px 0; }
-button { background:#333; color:white; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; }
-button:hover { background:#555; }
-iframe { width:100%; height:75vh; border:none; border-radius:12px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegraph Viewer - Dec to Jan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+        }
+
+        header {
+            text-align: center;
+            background: #333;
+            color: white;
+            padding: 15px;
+            font-size: 1.5em;
+        }
+
+        #gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.04);
+        }
+
+        .card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .card p {
+            text-align: center;
+            font-weight: 600;
+            padding: 10px;
+        }
+
+        #viewer {
+            display: none;
+            padding: 20px;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+
+        button {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #555;
+        }
+
+        iframe {
+            width: 100%;
+            height: 75vh;
+            border: none;
+            border-radius: 12px;
+        }
+    </style>
 </head>
+
 <body>
 
-<header>📅 Telegraph Viewer – Dec to Jan</header>
+    <header>📅 Telegraph Viewer – Dec to Jan</header>
 
-<div id="gallery"></div>
+    <div id="gallery"></div>
 
-<div id="viewer">
-  <div id="controls">
-    <button id="back">⬅️ Back</button>
-    <div>
-      <button id="prev">⬅️ Prev</button>
-      <button id="next">Next ➡️</button>
+    <div id="viewer">
+        <div id="controls">
+            <button id="back">⬅️ Back</button>
+            <div>
+                <button id="prev">⬅️ Prev</button>
+                <button id="next">Next ➡️</button>
+            </div>
+        </div>
+        <iframe id="postFrame"></iframe>
     </div>
-  </div>
-  <iframe id="postFrame"></iframe>
-</div>
 
-<script>
-const base = "https://telegra.ph/Check-her--Private--Photos-";
+    <script>
+        const base = "https://telegra.ph/Check-her--Private--Photos-";
 
-function generateLinks(month, days, monthName){
-  const arr = [];
-  for(let i=1;i<=days;i++){
-    const day = String(i).padStart(2,'0');
-    arr.push({
-      url: `${base}${month}-${day}`,
-      title: `${monthName} ${day}`
-    });
-  }
-  return arr;
-}
+        // Generate Dec + Jan links
+        function generateLinks(month, days, monthName) {
+            const arr = [];
+            for (let i = 1; i <= days; i++) {
+                const day = String(i).padStart(2, '0');
+                arr.push({
+                    url: `${base}${month}-${day}`,
+                    title: `${monthName} ${day}`
+                });
+            }
+            return arr;
+        }
 
-// All December + January links
-const posts = [
-  ...generateLinks("12",31,"Dec"),
-  ...generateLinks("01",31,"Jan")
-];
+        const posts = [...generateLinks("12", 31, "Dec"), ...generateLinks("01", 31, "Jan")];
 
-/* DOM Elements */
-const gallery = document.getElementById("gallery");
-const viewer = document.getElementById("viewer");
-const frame = document.getElementById("postFrame");
-const back = document.getElementById("back");
-const prev = document.getElementById("prev");
-const next = document.getElementById("next");
+        const gallery = document.getElementById("gallery");
+        const viewer = document.getElementById("viewer");
+        const frame = document.getElementById("postFrame");
+        const back = document.getElementById("back");
+        const prev = document.getElementById("prev");
+        const next = document.getElementById("next");
 
-let currentIndex = 0;
+        let currentIndex = 0;
 
-/* Gallery Cards */
-posts.forEach((post,index)=>{
-  const card = document.createElement("div");
-  card.className = "card";
+        // Show thumbnails
+        posts.forEach((post, index) => {
+            const card = document.createElement("div");
+            card.className = "card";
 
-  const img = document.createElement("img");
-  // Lightweight thumbnail using thum.io
-  img.src = `https://image.thum.io/get/${post.url}`;
-  img.alt = post.title;
+            const img = document.createElement("img");
+            img.src = `https://image.thum.io/get/${post.url}`;
+            img.alt = post.title;
 
-  const title = document.createElement("p");
-  title.textContent = post.title;
+            const title = document.createElement("p");
+            title.textContent = post.title;
 
-  card.appendChild(img);
-  card.appendChild(title);
-  card.onclick = ()=>openPost(index);
-  gallery.appendChild(card);
-});
+            card.appendChild(img);
+            card.appendChild(title);
 
-/* Viewer */
-function openPost(index){
-  currentIndex = index;
-  gallery.style.display = "none";
-  viewer.style.display = "block";
-  loadPost(posts[currentIndex].url);
-}
+            card.onclick = () => openPost(index);
 
-function loadPost(url){
-  // Use allorigins proxy to avoid CORS blocking
-  const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-  frame.srcdoc = `<p style='text-align:center;'>Loading...</p>`;
-  fetch(proxy)
-    .then(res=>res.text())
-    .then(html=>frame.srcdoc = html)
-    .catch(()=>frame.srcdoc = `<p style='color:red;text-align:center;'>Failed to load.</p>`);
-}
+            gallery.appendChild(card);
+        });
 
-/* Controls */
-back.onclick = ()=> {
-  viewer.style.display = "none";
-  gallery.style.display = "grid";
-};
+        // Open post in viewer
+        function openPost(index) {
+            currentIndex = index;
+            gallery.style.display = "none";
+            viewer.style.display = "block";
+            loadPost(posts[currentIndex].url);
+        }
 
-prev.onclick = ()=> {
-  if(currentIndex>0){
-    currentIndex--;
-    loadPost(posts[currentIndex].url);
-  }
-};
+        // Load post using proxy API
+        function loadPost(url) {
+            frame.srcdoc = `<p style='text-align:center;'>Loading...</p>`;
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+            fetch(proxyUrl)
+                .then(res => res.text())
+                .then(html => frame.srcdoc = html)
+                .catch(() => frame.srcdoc = `<p style='color:red;text-align:center;'>Failed to load content.</p>`);
+        }
 
-next.onclick = ()=> {
-  if(currentIndex<posts.length-1){
-    currentIndex++;
-    loadPost(posts[currentIndex].url);
-  }
-};
-</script>
+        // Controls
+        back.onclick = () => {
+            viewer.style.display = "none";
+            gallery.style.display = "grid";
+        };
+
+        prev.onclick = () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadPost(posts[currentIndex].url);
+            }
+        };
+
+        next.onclick = () => {
+            if (currentIndex < posts.length - 1) {
+                currentIndex++;
+                loadPost(posts[currentIndex].url);
+            }
+        };
+    </script>
 
 </body>
+
 </html>
