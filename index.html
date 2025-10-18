@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Telegraph Viewer – Dec to Jan</title>
+<title>Telegraph Viewer – Nov to Jan</title>
 <style>
 body { font-family: Arial, sans-serif; background: #f5f6fa; margin:0; padding:20px; }
 h1 { text-align:center; margin-bottom:20px; }
@@ -16,11 +16,14 @@ h1 { text-align:center; margin-bottom:20px; }
 </head>
 <body>
 
-<h1>📅 Telegraph Viewer – Dec to Jan</h1>
+<h1>📅 Telegraph Viewer – Nov to Jan</h1>
 <div id="gallery"></div>
 
 <script>
 const base = "https://telegra.ph/Check-her--Private--Photos-";
+
+// Extra November link
+const novLink = { url: `${base}11-30`, title: "Nov 30" };
 
 // Generate all December + January links
 function generateLinks(month, days, monthName){
@@ -32,7 +35,13 @@ function generateLinks(month, days, monthName){
   return arr;
 }
 
-const posts = [...generateLinks("12",31,"Dec"), ...generateLinks("01",31,"Jan")];
+// Combine all links: Nov -> Dec -> Jan
+const posts = [
+  novLink,
+  ...generateLinks("12",31,"Dec"),
+  ...generateLinks("01",31,"Jan")
+];
+
 const gallery = document.getElementById("gallery");
 
 // Render preview cards
