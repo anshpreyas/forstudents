@@ -1,67 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Telegraph Viewer – Nov to Jan</title>
-<style>
-body { font-family: Arial, sans-serif; background: #f5f6fa; margin:0; padding:20px; }
-h1 { text-align:center; margin-bottom:20px; }
-#gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; }
-.card { background:white; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.15); cursor:pointer; transition: transform 0.2s; text-align:center; text-decoration:none; color:black; }
-.card:hover { transform:scale(1.04); }
-.card img { width:100%; height:150px; object-fit:cover; border-top-left-radius:12px; border-top-right-radius:12px; }
-.card p { font-weight:600; padding:10px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegraph Previews – YouTube Style</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+        }
+
+        header {
+            background: #202020;
+            color: white;
+            padding: 12px 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .container {
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: #f1f1f1;
+            padding-top: 20px;
+            min-height: 100vh;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 16px;
+            color: #333;
+            text-decoration: none;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+
+        .sidebar a:hover {
+            background: #ddd;
+        }
+
+        /* Main content */
+        .main {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .month-section {
+            margin-bottom: 30px;
+        }
+
+        .month-section h2 {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .card img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+        }
+
+        .card p {
+            padding: 8px;
+            font-weight: bold;
+            text-align: center;
+            margin: 0;
+        }
+    </style>
 </head>
+
 <body>
 
-<h1>📅 Telegraph Viewer – Nov to Jan</h1>
-<div id="gallery"></div>
+    <header>
+        <h1>Telegraph Previews</h1>
+    </header>
 
-<script>
-const base = "https://telegra.ph/Check-her--Private--Photos-";
+    <div class="container">
+        <div class="sidebar">
+            <a href="#">Nov 30</a>
+            <a href="#">Dec</a>
+            <a href="#">Jan</a>
+        </div>
+        <div class="main" id="gallery"></div>
+    </div>
 
-// Extra November link
-const novLink = { url: `${base}11-30`, title: "Nov 30" };
+    <script>
+        const base = "https://telegra.ph/Check-her--Private--Photos-";
+        const posts = [
+            { url: `${base}11-30`, title: "Nov 30" },
+            ...Array.from({ length: 31 }, (_, i) => ({ url: `${base}12-${String(i + 1).padStart(2, '0')}`, title: `Dec ${i + 1}` })),
+            ...Array.from({ length: 31 }, (_, i) => ({ url: `${base}01-${String(i + 1).padStart(2, '0')}`, title: `Jan ${i + 1}` })),
+        ];
 
-// Generate all December + January links
-function generateLinks(month, days, monthName){
-  const arr = [];
-  for(let i=1;i<=days;i++){
-    const day = String(i).padStart(2,'0');
-    arr.push({ url: `${base}${month}-${day}`, title: `${monthName} ${day}` });
-  }
-  return arr;
-}
+        const gallery = document.getElementById('gallery');
 
-// Combine all links: Nov -> Dec -> Jan
-const posts = [
-  novLink,
-  ...generateLinks("12",31,"Dec"),
-  ...generateLinks("01",31,"Jan")
-];
+        let currentMonth = '';
+        let section;
 
-const gallery = document.getElementById("gallery");
+        posts.forEach(post => {
+            const month = post.title.split(' ')[0];
+            if (month !== currentMonth) {
+                currentMonth = month;
+                section = document.createElement('div');
+                section.className = 'month-section';
+                section.innerHTML = `<h2>${month}</h2><div class="grid"></div>`;
+                gallery.appendChild(section);
+            }
 
-// Render preview cards
-posts.forEach(post => {
-  const a = document.createElement("a");
-  a.href = post.url; // opens in same tab
-  a.className = "card";
-
-  const img = document.createElement("img");
-  img.src = `https://image.thum.io/get/${post.url}`;
-  img.alt = post.title;
-
-  const title = document.createElement("p");
-  title.textContent = post.title;
-
-  a.appendChild(img);
-  a.appendChild(title);
-  gallery.appendChild(a);
-});
-</script>
+            const grid = section.querySelector('.grid');
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+    <img src="https://image.thum.io/get/${post.url}" alt="${post.title}">
+    <p>${post.title}</p>
+  `;
+            card.onclick = () => window.open(post.url, "_blank");
+            grid.appendChild(card);
+        });
+    </script>
 
 </body>
+
 </html>
