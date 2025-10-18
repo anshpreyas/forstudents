@@ -5,39 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Telegraph Viewer – Dec to Jan</title>
 <style>
-body { font-family: Arial, sans-serif; background: #f5f6fa; margin:0; }
-header { text-align:center; background:#333; color:white; padding:15px; font-size:1.5em; }
-#loading { width: 100%; background: #ddd; height: 6px; margin:0; position:fixed; top:0; left:0; }
-#loadingBar { height:6px; width:0; background: #28a745; transition: width 0.2s; }
-#gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; padding:20px; }
-.card { background:white; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.15); cursor:pointer; transition: transform 0.2s; }
+body { font-family: Arial, sans-serif; background: #f5f6fa; margin:0; padding:20px; }
+h1 { text-align:center; margin-bottom:20px; }
+#gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; }
+.card { background:white; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.15); cursor:pointer; transition: transform 0.2s; text-align:center; text-decoration:none; color:black; }
 .card:hover { transform:scale(1.04); }
 .card img { width:100%; height:150px; object-fit:cover; border-top-left-radius:12px; border-top-right-radius:12px; }
-.card p { text-align:center; font-weight:600; padding:10px; }
-#viewer { display:none; padding:20px; }
-#controls { display:flex; justify-content:space-between; margin:15px 0; }
-button { background:#333; color:white; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; }
-button:hover { background:#555; }
-iframe { width:100%; height:75vh; border:none; border-radius:12px; }
+.card p { font-weight:600; padding:10px; }
 </style>
 </head>
 <body>
 
-<header>📅 Telegraph Viewer – Dec to Jan</header>
-<div id="loading"><div id="loadingBar"></div></div>
-
+<h1>📅 Telegraph Viewer – Dec to Jan</h1>
 <div id="gallery"></div>
-
-<div id="viewer">
-  <div id="controls">
-    <button id="back">⬅️ Back</button>
-    <div>
-      <button id="prev">⬅️ Prev</button>
-      <button id="next">Next ➡️</button>
-    </div>
-  </div>
-  <iframe id="postFrame"></iframe>
-</div>
 
 <script>
 const base = "https://telegra.ph/Check-her--Private--Photos-";
@@ -51,23 +31,15 @@ function generateLinks(month, days, monthName){
   }
   return arr;
 }
+
 const posts = [...generateLinks("12",31,"Dec"), ...generateLinks("01",31,"Jan")];
-
 const gallery = document.getElementById("gallery");
-const viewer = document.getElementById("viewer");
-const frame = document.getElementById("postFrame");
-const back = document.getElementById("back");
-const prev = document.getElementById("prev");
-const next = document.getElementById("next");
-const loadingBar = document.getElementById("loadingBar");
 
-let currentIndex = 0;
-let cachedPosts = new Array(posts.length).fill("<p style='text-align:center;'>Loading...</p>");
-
-// Render gallery cards
-posts.forEach((post,index)=>{
-  const card = document.createElement("div");
-  card.className = "card";
+// Render preview cards
+posts.forEach(post => {
+  const a = document.createElement("a");
+  a.href = post.url; // opens in same tab
+  a.className = "card";
 
   const img = document.createElement("img");
   img.src = `https://image.thum.io/get/${post.url}`;
@@ -76,51 +48,10 @@ posts.forEach((post,index)=>{
   const title = document.createElement("p");
   title.textContent = post.title;
 
-  card.appendChild(img);
-  card.appendChild(title);
-  card.onclick = ()=>openPost(index);
-  gallery.appendChild(card);
+  a.appendChild(img);
+  a.appendChild(title);
+  gallery.appendChild(a);
 });
-
-// Prefetch all posts
-async function prefetchPosts(){
-  for(let i=0;i<posts.length;i++){
-    try {
-      const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(posts[i].url)}`;
-      const res = await fetch(proxy);
-      if(res.ok){
-        cachedPosts[i] = await res.text();
-      } else {
-        cachedPosts[i] = "<p style='color:red;text-align:center;'>Failed to load.</p>";
-      }
-    } catch {
-      cachedPosts[i] = "<p style='color:red;text-align:center;'>Failed to load.</p>";
-    }
-    loadingBar.style.width = `${((i+1)/posts.length)*100}%`;
-  }
-  document.getElementById("loading").style.display = "none";
-}
-
-// Open post in viewer
-function openPost(index){
-  currentIndex = index;
-  gallery.style.display = "none";
-  viewer.style.display = "block";
-  loadPost(currentIndex);
-}
-
-// Load cached post content
-function loadPost(index){
-  frame.srcdoc = cachedPosts[index] || "<p style='color:red;text-align:center;'>Failed to load.</p>";
-}
-
-// Controls
-back.onclick = ()=>{ viewer.style.display="none"; gallery.style.display="grid"; };
-prev.onclick = ()=>{ if(currentIndex>0){ currentIndex--; loadPost(currentIndex); } };
-next.onclick = ()=>{ if(currentIndex<posts.length-1){ currentIndex++; loadPost(currentIndex); } };
-
-// Start prefetching on page load
-prefetchPosts();
 </script>
 
 </body>
